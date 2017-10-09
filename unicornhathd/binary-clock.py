@@ -28,6 +28,16 @@ def reset_board():  # Set every pixel to background color
                 unicornhathd.set_pixel(x,y,br,bg,bb)
                 print(x, y)
 
+def get_timeData():
+    dt = datetime.datetime()
+    timeData = {'year': dt.year(), 'month': dt.month(), 'day': dt.day(),
+                'hour': dt.hour(), 'minute': dt.minute(), 'second': dt.second}
+    return timeData
+
+def convert_to_binary(dictionary):  # Converts dictionary items into binary'
+    for i in range(len(dictionary)):
+        dictionary[i]
+
 try:
     #while True:
         reset_board()
