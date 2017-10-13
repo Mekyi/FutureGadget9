@@ -13,6 +13,7 @@ except ImportError:
 print('Unicorn HAT HD Binary clock. Press Ctrl + C to exit.')
 
 #unicornhathd.rotation(r=180)
+unicornhathd.brightness(0.1)
 
 # Constants
 TIME_COLOR = (0,255,0)
@@ -24,15 +25,15 @@ BORDER_COLOR = (255,0,0)            # RGB
 BINARY_COLOR = (255,0,0)            # RGB
 
 
-def reset_board():  # Set every pixel to background color
+def draw_background():  # Set every pixel to background color
     r, g, b = BACKGROUND_COLOR
     br, bg, bb = BORDER_COLOR  # Border RGB variables
     for x in range(16):
         for y in range(16):
             if (x != 0) and (x != 15) and (y != 0) and (y != 15):
                 unicornhathd.set_pixel(x,y,r,g,b)
-            else:
-                unicornhathd.set_pixel(x,y,br,bg,bb)
+            #else:
+                #unicornhathd.set_pixel(x,y,br,bg,bb)
 
 def get_timeData():
     dt = datetime.datetime.now()
@@ -50,7 +51,7 @@ def split_values(): #dictionary
     storedDictionary = get_timeData()
     for i in storedDictionary:
         storedDictionary[i] = split_numbers(storedDictionary[i])
-    print(storedDictionary)
+    #print(storedDictionary)
     return storedDictionary
 
 
@@ -67,7 +68,7 @@ def construct_time_list(dictionary):
     return timeList
 
 def time_to_hat(list):
-    print(list)
+    #print(list)
     ledColor = ()
     columnIndex = 13
     rowIndex = 11
@@ -98,7 +99,7 @@ def time_to_hat(list):
 
 try:
     while True:
-        reset_board()
+        #draw_background()
         timeData = split_values()
         for item in timeData:  # item in dictionary
             for i in range(len(timeData[item])):  # list in item
@@ -106,6 +107,7 @@ try:
         timeList = construct_time_list(timeData)
         time_to_hat(timeList)
         unicornhathd.show()
+        unicornhathd.clear()
         time.sleep(0.2)
 except KeyboardInterrupt:
     unicornhathd.off()
