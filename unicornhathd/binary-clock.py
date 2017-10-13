@@ -12,6 +12,8 @@ except ImportError:
 
 print('Unicorn HAT HD Binary clock. Press Ctrl + C to exit.')
 
+#unicornhathd.rotation(r=180)
+
 # Constants
 TIME_COLOR = (0,255,0)
 HOUR_COLOR = (255,0,0)  #(0,0,0)
@@ -67,7 +69,7 @@ def construct_time_list(dictionary):
 def time_to_hat(list):
     print(list)
     ledColor = ()
-    columnIndex = 2
+    columnIndex = 13
     rowIndex = 11
     for unit in range(len(list)):  # Loop through hours, minutes and seconds
         if unit == 0:
@@ -78,15 +80,18 @@ def time_to_hat(list):
             ledColor = SECOND_COLOR
 
         for binary in range(len(list[unit])):  # Single number in hour/minute/second
-            for binaryDigit in reversed(list[unit][binary]):
+            for binaryDigit in list[unit][binary]:
                 if binaryDigit == '1':
-                    unicornhathd.set_pixel(columnIndex, rowIndex, ledColor[0], ledColor[1],
-                                           ledColor[2])
+                    for x in range(2):  # Make one pixel 2x2 area
+                        for y in range(2):
+                            unicornhathd.set_pixel(columnIndex-x, rowIndex-y,
+                                                   ledColor[0], ledColor[1],
+                                                   ledColor[2])
                     rowIndex -= 2
                 else:
                     rowIndex -= 2
 
-            columnIndex += 2
+            columnIndex -= 2
             rowIndex = 11
 
 
@@ -101,5 +106,6 @@ try:
         timeList = construct_time_list(timeData)
         time_to_hat(timeList)
         unicornhathd.show()
+        time.sleep(0.2)
 except KeyboardInterrupt:
     unicornhathd.off()
