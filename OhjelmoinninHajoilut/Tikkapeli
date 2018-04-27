@@ -1,0 +1,194 @@
+//! Erittäin pahasti kesken vielä!
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+
+namespace Tikkakilpailu
+{
+    class Program
+    {
+        // Säännöt:
+        // - 5 tikkaa / vuoro
+        // - 3 vuoroa / heittäjä
+        // - heittäjiä max 10
+        // - paras tulos jää voimaan
+        // - tasapeli mahdollinen
+
+        // Määritellään yleiset muuttujat:
+
+
+        public static void Main(string[] args)
+        {
+            StreamWriter fileIn;
+            StreamReader fileOut;
+
+            string kilpailunNimi;        // kilpailun nimi. Käytetään myös tiedostonimessä
+            string[,] tulokset = null;   // tulokset säilytetään kaksiulotteisessa taulukossa
+            char komento;                // käyttäjältä saatu komentokehote
+
+            Console.WriteLine("Tikkakilpailu");
+            kilpailunNimi = KysyKilpailunNimi();
+
+            while (true)
+            {
+                komento = KysyKomento();
+
+                switch (komento)
+                {
+                    case 'u':  // uusi peli
+                        kilpailunNimi = KysyKilpailunNimi();
+                        break;
+
+                    case 'j':  // jatka peliä
+                        haeTiedostosta(kilpailunNimi);
+                        break;
+
+                    case 'h':  // tulosta tulokset heittojärjestyksessä
+                        if (tulokset == null)
+                        {
+                            Console.WriteLine("Ei vielä tuloksia!");
+                        }
+                        else
+                        {
+                            tulosta(tulokset, 0);
+                        }
+                        break;
+
+                    case 'o':  // tulosta tulokset aakkosjärjestyksessä
+                        if (tulokset == null)
+                        {
+                            Console.WriteLine("Ei vielä tuloksia!");
+                        }
+                        else
+                        {
+                            tulosta(tulokset, 1);
+                        }
+                        break;
+
+                    case 't':  // tulosta tulokset pistejärjestyksessä
+                        if (tulokset == null)
+                        {
+                            Console.WriteLine("Ei vielä tuloksia!");
+                        }
+                        else
+                        {
+                            tulosta(tulokset, 2);
+                        }
+                        break;
+
+                    case 'l':  // lopeta
+                        tallennaTiedostoon(kilpailunNimi, tulokset);
+                        return;
+
+                    default:
+                        Console.WriteLine("Komentoa ei tunnistettu.");
+                        break;
+                }
+                haeTiedostosta("testi.txt");
+                Console.ReadLine();
+            }
+        }
+
+        private static string KysyKilpailunNimi()
+        {
+            string kilpailunNimi;
+
+            Console.Write("Anna kilpailun nimi: ");
+            kilpailunNimi = Console.ReadLine();
+            return kilpailunNimi;
+        }
+
+        private static char KysyKomento()
+        {
+            char komento;
+            Console.WriteLine("(u)usi, (j)atka, (h)eittojärjestys, (t)ulokset, (o)sallistujat tai (l)opeta: ");
+            komento = char.Parse(Console.ReadLine());
+            return komento;
+        }
+
+        public static string[,] lajittele(string[,] tulokset, int per)
+        {
+            // lajittelu halutussa järjestyksessä
+            switch (per)
+            {
+                case 0:  // heittojärjestys
+                    break;
+
+                case 1:  // aakkosjärjestys
+                    break;
+
+                default:  // pistejärjestys oletuksena
+
+                    break;
+            }
+        }
+
+        public static void tulosta(string[,] tulokset, int jar)
+        {
+            // tulostus halutussa järjestyksessä
+            switch (jar)
+            {
+                case 0:  // heittojärjestys
+                    break;
+
+                case 1:  // aakkosjärjestys
+                    break;
+
+                default:  // tulosjärjestys oletuksena
+
+                    break;
+            }
+        }
+
+        public static void tallennaTiedostoon(string tiedosto, string[,] tulokset)
+        {
+            // Pelaajatiedot tallennetaan seuraavaan muotoon: 2;jukka;6;3
+            // (ilmoittautumisjärjestys, nimi, tulos, heittojen määrä)
+
+            // todo: reversaa tämä
+            string[] tulosTiedosto = File.ReadAllLines(tiedosto);
+            string[,] tulokset = new string[tulosTiedosto.Length, 4];
+
+            for (int rowIndex = 0; rowIndex < tulosTiedosto.Length; rowIndex++)
+            {
+                string[] splittedRow = tulosTiedosto[rowIndex].Split(';');
+
+                for (int columnIndex = 0; columnIndex < 4; columnIndex++)
+                {
+                    tulokset[rowIndex, columnIndex] = splittedRow[columnIndex];
+                }
+            }
+        }
+
+        public static string[,] haeTiedostosta(string tiedosto)
+        {
+            // Pelaajatiedot haetaan tiedostosta peliä tai tuloksien katsomista varten.
+            string[] tulosTiedosto = File.ReadAllLines(tiedosto);
+            string[,] tulokset = new string[tulosTiedosto.Length, 4];
+
+            for (int rowIndex = 0; rowIndex < tulosTiedosto.Length; rowIndex++)
+            {
+                string[] splittedRow = tulosTiedosto[rowIndex].Split(';');
+
+                for (int columnIndex = 0; columnIndex < 4; columnIndex++)
+                {
+                    tulokset[rowIndex, columnIndex] = splittedRow[columnIndex];
+                }
+            }
+
+            //// Testaa taulukon tulostus:
+            //for (int i = 0; i < tulosTiedosto.Length; i++)
+            //{
+            //    for (int y = 0; y < 4; y++)
+            //    {
+            //        Console.Write(tulokset[i, y] + " ");
+            //    }
+            //    Console.WriteLine("");
+            //}
+            return tulokset;
+        }
+    }
+}
