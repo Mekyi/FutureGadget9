@@ -17,17 +17,12 @@ namespace Tikkakilpailu
         // - paras tulos jää voimaan
         // - tasapeli mahdollinen
 
-        // Määritellään yleiset muuttujat:
-
-
         public static void Main(string[] args)
         {
-            StreamWriter fileIn;
-            StreamReader fileOut;
-
-            string kilpailunNimi;        // kilpailun nimi. Käytetään myös tiedostonimessä
-            string[,] tulokset = null;   // tulokset säilytetään kaksiulotteisessa taulukossa
-            char komento;                // käyttäjältä saatu komentokehote
+            string kilpailunNimi;       // kilpailun nimi. Käytetään myös tiedostonimessä
+            string[,] tulokset = null;  // tulokset säilytetään kaksiulotteisessa taulukossa
+            List<string> osallistujat;  // lista osallistujista
+            char komento;               // käyttäjältä saatu komentokehote
 
             Console.WriteLine("Tikkakilpailu");
             kilpailunNimi = KysyKilpailunNimi();
@@ -40,9 +35,13 @@ namespace Tikkakilpailu
                 {
                     case 'u':  // uusi peli
                         kilpailunNimi = KysyKilpailunNimi();
+                        osallistujat = KysyOsallistujat();
+                        tulokset = LuoTaulukko(osallistujat);
+
                         break;
 
                     case 'j':  // jatka peliä
+                        // todo jos heittoja 0 kysy onko uusia kilpailijoita
                         haeTiedostosta(kilpailunNimi);
                         break;
 
@@ -75,6 +74,7 @@ namespace Tikkakilpailu
                         }
                         else
                         {
+
                             tulosta(tulokset, 2);
                         }
                         break;
@@ -87,9 +87,63 @@ namespace Tikkakilpailu
                         Console.WriteLine("Komentoa ei tunnistettu.");
                         break;
                 }
-                haeTiedostosta("testi.txt");
                 Console.ReadLine();
             }
+        }
+
+        private static string[,] LuoTaulukko(List<string> osallistujat)
+        {
+            string[,] tulosTaulukko = new string[osallistujat.Count,4];
+            for (int rowIndex = 0; rowIndex < osallistujat.Count; rowIndex++)
+            {
+                for (int columnIndex = 0; columnIndex < 4; columnIndex++)
+                {
+                    if (columnIndex == 0)
+                    {
+                        tulosTaulukko[rowIndex, columnIndex] = columnIndex.ToString();
+                    }
+                    else if (columnIndex == 1)
+                    {
+                        tulosTaulukko[rowIndex, columnIndex] = osallistujat[rowIndex];
+                    }
+                    else if (columnIndex == 2)
+                    {
+                        tulosTaulukko[rowIndex, columnIndex] = "0";
+                    }
+                    else if (columnIndex == 3)
+                    {
+                        tulosTaulukko[rowIndex, columnIndex] = "0";
+                    }
+                    else
+                    {
+                        Console.WriteLine("Out of range");
+                    }
+                }
+            }
+            return tulosTaulukko;
+        }
+
+        private static List<string> KysyOsallistujat()
+        {
+            List<string> osallistujat = new List<string>();
+            string kilpailijanNimi;
+
+            for (int i = 0; i < 10; i++)
+            {
+                Console.Write("Anna henkilön nimi: ");
+                kilpailijanNimi = Console.ReadLine();
+                Console.WriteLine("");
+
+                if (kilpailijanNimi == "")
+                {
+                    break;
+                }
+                else
+                {
+                    osallistujat.Add(kilpailijanNimi);
+                }
+            }
+            return osallistujat;
         }
 
         private static string KysyKilpailunNimi()
@@ -111,34 +165,89 @@ namespace Tikkakilpailu
 
         public static string[,] lajittele(string[,] tulokset, int per)
         {
+            string[,] lajittelutaulukko = new string[tulokset.Length, 4];
+            string[] temp;  // käytetään väliaikaisesti järjestyksen muutoksen vaihtamiseen
+            List<String> sarakeSisalto = new List<string>();
+
             // lajittelu halutussa järjestyksessä
+
             switch (per)
             {
-                case 0:  // heittojärjestys
+                case 0:  // heittojärjestys (tulokset[,0])
+                    lajittelutaulukko = tulokset;
                     break;
 
-                case 1:  // aakkosjärjestys
+                case 1:  // aakkosjärjestys (tulokset[,1])
+                    for (int rowIndex = 0; rowIndex < tulokset.Length; rowIndex++)
+                    {
+                        sarakeSisalto.Add(tulokset[rowIndex, per]);
+                    }
+                    sarakeSisalto.Sort();
+
+                    for (int rowIndex = 0; rowIndex < tulokset.Length; rowIndex++)
+                    {
+                        string tempNimi = sarakeSisalto[rowIndex];
+                        for (int i = 0; i < sarakeSisalto.Count; i++)
+                        {
+                            if (tempNimi == tulokset[i, 1])
+                            {
+                                for (int columnIndex = 0; columnIndex < 4; columnIndex++)
+                                {
+                                    lajittelutaulukko[rowIndex, columnIndex] = tulokset[i, columnIndex];
+                                }
+                            }
+                        }
+                    }
                     break;
 
-                default:  // pistejärjestys oletuksena
+                default:  // pistejärjestys oletuksena (tulokset[,2])
 
                     break;
             }
+            return lajittelutaulukko;
         }
 
         public static void tulosta(string[,] tulokset, int jar)
         {
+            string[,] tuloksetLajiteltu;
             // tulostus halutussa järjestyksessä
             switch (jar)
             {
-                case 0:  // heittojärjestys
+                case 0:  // heittojärjestys (tulokset[,0])
+                    Console.WriteLine("Tikkakilpailu - Heittojärjestys");
+                    Console.WriteLine("Heittojärjestys Nimi                Tulos     Heitot ");
+                    tuloksetLajiteltu = lajittele(tulokset, 0);
+                    for (int rivi = 0; rivi < tuloksetLajiteltu.Length; rivi++)
+                    {
+                        Console.WriteLine("{0}        {1}               {2}               {3}",
+                            tuloksetLajiteltu[rivi,0], tuloksetLajiteltu[rivi,1],
+                            tuloksetLajiteltu[rivi,2], tuloksetLajiteltu[rivi,3]);
+                    }
                     break;
 
-                case 1:  // aakkosjärjestys
+                case 1:  // aakkosjärjestys (tulokset[,1])
+                    Console.WriteLine("Tikkakilpailu - Osallistujat");
+                    Console.WriteLine("Nimi                Heittojärjestys Tulos     Heitot ");
+                    tuloksetLajiteltu = lajittele(tulokset, 1);
+                    for (int rivi = 0; rivi < tuloksetLajiteltu.Length; rivi++)
+                    {
+                        Console.WriteLine("{0}              {1}               {2}        {3} ",
+                            tuloksetLajiteltu[rivi, 1], tuloksetLajiteltu[rivi, 0],
+                            tuloksetLajiteltu[rivi, 2], tuloksetLajiteltu[rivi, 3]);
+                    }
                     break;
 
-                default:  // tulosjärjestys oletuksena
+                default:  // tulosjärjestys oletuksena (tulokset[,2])
+                    Console.WriteLine("Tikkakilpailu - Tulokset");
+                    Console.WriteLine("Tulos     Nimi                Heittojärjestys Heitot ");
+                    tuloksetLajiteltu = lajittele(tulokset, 2);
+                    for (int rivi = 0; rivi < tuloksetLajiteltu.Length; rivi++)
+                    {
+                        Console.WriteLine("{0}        {1}               {2}               {3}",
+                            tuloksetLajiteltu[rivi, 2], tuloksetLajiteltu[rivi, 1],
+                            tuloksetLajiteltu[rivi, 0], tuloksetLajiteltu[rivi, 3]);
 
+                    }
                     break;
             }
         }
@@ -147,20 +256,38 @@ namespace Tikkakilpailu
         {
             // Pelaajatiedot tallennetaan seuraavaan muotoon: 2;jukka;6;3
             // (ilmoittautumisjärjestys, nimi, tulos, heittojen määrä)
+            StreamWriter tulosTiedosto;
 
-            // todo: reversaa tämä
-            string[] tulosTiedosto = File.ReadAllLines(tiedosto);
-            string[,] tulokset = new string[tulosTiedosto.Length, 4];
-
-            for (int rowIndex = 0; rowIndex < tulosTiedosto.Length; rowIndex++)
+            if (!File.Exists(tiedosto))  // luo tiedosto jos sitä ei vielä ole
             {
-                string[] splittedRow = tulosTiedosto[rowIndex].Split(';');
+                tulosTiedosto = File.CreateText(tiedosto);
+                tulosTiedosto.Close();
+            }
 
+            else  // tyhjennä jo olemassa oleva tiedosto uudelleenkirjoitusta varten
+            {
+                File.WriteAllText(tiedosto, String.Empty);
+            }
+
+
+            // Kirjoita tulokset tekstitiedostoon:
+            tulosTiedosto = File.AppendText(tiedosto);
+            for (int rowIndex = 0; rowIndex < tulokset.Length; rowIndex++)
+            {
                 for (int columnIndex = 0; columnIndex < 4; columnIndex++)
                 {
-                    tulokset[rowIndex, columnIndex] = splittedRow[columnIndex];
+                    if (columnIndex == 0)
+                    {
+                        tulosTiedosto.Write("{0}", tulokset[rowIndex, columnIndex]);
+                    }
+                    else
+                    {
+                        tulosTiedosto.Write(";{0}", tulokset[rowIndex, columnIndex]);
+                    }
                 }
+                tulosTiedosto.WriteLine("");  // vaihda riviä
             }
+            tulosTiedosto.Close();
         }
 
         public static string[,] haeTiedostosta(string tiedosto)
