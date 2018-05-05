@@ -37,14 +37,19 @@ namespace Tikkakilpailu
                         break;
 
                     case 'j':  // jatka peliä aiemmin annetun kilpailunimen perusteella
-                        string input = Console.ReadLine();
-                        if (input != "")
+                        if (!PeliKesken()) // tarkista onko peli kesken. Mikäli ei ole, kysy mahdollisia lisäkilpailijoita
                         {
-                            kilpailunNimi = input + ".txt";
+                            Console.Write("Anna henkilön nimi: ");
+                            string uusiPelaaja = Console.ReadLine();
+                            if (uusiPelaaja != "")
+                            {
+                                osallistujat.Add(uusiPelaaja);
+                            }
                         }
                         haeTiedostosta(kilpailunNimi);
-                        PelaaPelia();
+                        JatkaPelia();
                         tallennaTiedostoon(kilpailunNimi, tulokset);
+                        Console.Write("(u)usi, (j)atka, (h)eittojärjestys, (t)ulokset, (o)sallistujat tai (l)opeta: ");
                         break;
 
                     case 'h':  // tulosta tulokset heittojärjestyksessä
@@ -55,7 +60,7 @@ namespace Tikkakilpailu
                         else
                         {
                             tulosta(tulokset, 0);
-                            Console.WriteLine("(u)usi, (j)atka, (h)eittojärjestys, (t)ulokset, (o)sallistujat tai (l)opeta: ");
+                            Console.Write("(u)usi, (j)atka, (h)eittojärjestys, (t)ulokset, (o)sallistujat tai (l)opeta: ");
                         }
                         break;
 
@@ -67,7 +72,7 @@ namespace Tikkakilpailu
                         else
                         {
                             tulosta(tulokset, 1);
-                            Console.WriteLine("(u)usi, (j)atka, (h)eittojärjestys, (t)ulokset, (o)sallistujat tai (l)opeta: ");
+                            Console.Write("(u)usi, (j)atka, (h)eittojärjestys, (t)ulokset, (o)sallistujat tai (l)opeta: ");
                         }
                         break;
 
@@ -80,7 +85,7 @@ namespace Tikkakilpailu
                         {
 
                             tulosta(tulokset, 2);
-                            Console.WriteLine("(u)usi, (j)atka, (h)eittojärjestys, (t)ulokset, (o)sallistujat tai (l)opeta: ");
+                            Console.Write("(u)usi, (j)atka, (h)eittojärjestys, (t)ulokset, (o)sallistujat tai (l)opeta: ");
                         }
                         break;
 
@@ -95,6 +100,57 @@ namespace Tikkakilpailu
             }
         }
 
+        private static void JatkaPelia()
+        {
+            int heitot = int.Parse(tulokset[0, 3]); // tarkista millä kieroksella mennään
+            for (int i = heitot; i < 3; i++)  // loopataan kierrosten läpi rajoittaen peli kolmeen kierrokseen
+            {
+                for (int pelaaja = 0; pelaaja < tulokset.GetLength(0); pelaaja++) // käydään jokaisen pelaajan vuoro läpi
+                {
+                    Console.Write("Heittovuoro {0} pelaaja {1} - {2} pistemäärä: ", (i + 1), (pelaaja + 1), (tulokset[pelaaja, 1]));
+                    string piste = Console.ReadLine();
+
+                    if (piste == "")  // keskeytä peli
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        if (pelaaja % 2 != 0)
+                        {
+                            if (int.Parse(piste) > int.Parse(tulokset[1, 2]))
+                            {
+                                tulokset[1, 2] = piste;
+                                tulokset[1, 3] = (int.Parse(tulokset[1, 3]) + 1).ToString();
+                            }
+                        }
+                        else
+                        {
+                            if (int.Parse(piste) > int.Parse(tulokset[0, 2]))
+                            {
+                                tulokset[0, 2] = piste;
+                                tulokset[0, 3] = (int.Parse(tulokset[0, 3]) + 1).ToString();
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        private static bool PeliKesken()
+        {
+            // Onko ensimmäisellä heittovuorolla olevalla pelaajalla heittoja?
+            if (int.Parse(tulokset[0,3]) == 0)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         private static void PelaaPelia()
         {
             int heitot = int.Parse(tulokset[0, 3]); // tarkista millä kieroksella mennään
@@ -102,6 +158,7 @@ namespace Tikkakilpailu
             {
                 for (int pelaaja = 0; pelaaja < tulokset.GetLength(0); pelaaja++) // käydään jokaisen pelaajan vuoro läpi
                 {
+                    //Console.Write("Heittovuoro {0} pelaaja {1} - {2} pistemäärä: ", (i + 1), (pelaaja + 1), (tulokset[pelaaja, 1]));
                     string piste = Console.ReadLine();
 
                     if (piste == "")  // keskeytä peli
@@ -285,10 +342,11 @@ namespace Tikkakilpailu
                             tuloksetLajiteltu[rivi,0], tuloksetLajiteltu[rivi,1],
                             tuloksetLajiteltu[rivi,2], tuloksetLajiteltu[rivi,3]);
                     }
+
                     break;
 
                 case 1:  // aakkosjärjestys (tulokset[,1])
-                    //Console.WriteLine("Tikkakilpailu - Osallistujat");
+                    Console.WriteLine("Tikkakilpailu - Osallistujat");
                     Console.WriteLine("Nimi                Heittojärjestys Tulos     Heitot ");
                     tuloksetLajiteltu = lajittele(tulokset, 1);
                     for (int rivi = 0; rivi < tulokset.GetLength(0); rivi++)
